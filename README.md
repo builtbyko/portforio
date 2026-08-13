@@ -3,9 +3,13 @@
 > I BUILD NEW WAYS TO SEE CITIES.
 > 都市の、新しい見方をつくる。
 
+**https://builtbyko.github.io/portforio/**
+
 実在する道路、鉄道、建物、旧河川のデータを重ね、銀座周辺を一つの都市模型として立ち上げるWebGLスタディです。スクロールに合わせて、暗闇から点、線、建物へと都市が形になります。
 
-## 動かす
+関連: [TimeWalk 銀座 — 消えた川の上を、歩く](https://builtbyko.github.io/timewalk/)
+
+## 手元で動かす
 
 ```bash
 python tools/serve_lab.py
