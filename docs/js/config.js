@@ -191,6 +191,23 @@ export const CONFIG = Object.freeze({
     // edge can be read, and so the layers below are not hidden under it.
     slabContractTo: 0.3,
   }),
+  audio: Object.freeze({
+    // Synthetic throughout. There is no field recording of Ginza in this
+    // project, so the bed never pretends to be one.
+    masterGain: 0.14,
+    droneGain: 0.5,
+    bedGain: 0.22,
+    // The filter carries the sequence: shut in the darkness, open once the
+    // city stands, closing again underground.
+    cutoffFloor: 110,
+    cutoffCeiling: 900,
+    bedHz: 320,
+    voices: Object.freeze([
+      Object.freeze({ type: "sine", hz: 55, gain: 0.6 }),
+      Object.freeze({ type: "sine", hz: 55.35, gain: 0.45 }),
+      Object.freeze({ type: "triangle", hz: 110, gain: 0.14 }),
+    ]),
+  }),
   loading: Object.freeze({ timeoutMs: 15000 }),
   debug: Object.freeze({ queryParameter: "debug" }),
 });

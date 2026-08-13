@@ -8,6 +8,7 @@ import { createFixedCamera, frameFixedCamera } from "./camera.js";
 import { createUI } from "./ui.js";
 import { evaluateSequence, snapProgressForReducedMotion } from "./sequence.js";
 import { createScrollDriver } from "./scroll.js";
+import { createAudioBed } from "./audio.js";
 
 function viewportFor(host) {
   const rect = host.getBoundingClientRect();
@@ -113,6 +114,9 @@ async function bootstrap(ui) {
   let sequence = evaluateSequence(0);
   city.applySequence(sequence);
 
+  const audio = createAudioBed();
+  if (audio.isAvailable()) ui.enableSoundToggle(() => audio.toggle());
+
   const resizeAndRender = () => {
     if (disposed || contextLost || document.hidden) return;
     const viewport = viewportFor(ui.root);
@@ -141,6 +145,7 @@ async function bootstrap(ui) {
         sequence = evaluateSequence(progress);
       }
       city.applySequence(sequence);
+      audio.apply(sequence);
       ui.setScrollStarted(progress > 0.01);
       ui.setStrataLegendVisible(sequence.strataT > 0.12 && sequence.crackT < 0.5);
       ui.setDescentNoticeVisible(sequence.descentT > CONFIG.descent.noticeFrom);
@@ -190,6 +195,7 @@ async function bootstrap(ui) {
     disposed = true;
     if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
     scrollDriver.dispose();
+    audio.dispose();
     resizeObserver?.disconnect();
     window.removeEventListener("resize", scheduleRender);
     window.removeEventListener("orientationchange", scheduleRender);

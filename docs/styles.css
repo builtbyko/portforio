@@ -421,6 +421,22 @@ body:not(.is-loading) .site-meta {
   text-underline-offset: 0.18em;
 }
 
+/* Sound is off until asked for, so it borrows the debug control's language
+   rather than announcing itself. */
+.sound-toggle {
+  flex: 0 0 auto;
+  min-width: 50px;
+  min-height: 28px;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  color: var(--text-muted);
+  background: rgb(3 8 15 / 52%);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
 .debug-toggle {
   flex: 0 0 auto;
   min-width: 50px;
@@ -435,6 +451,9 @@ body:not(.is-loading) .site-meta {
   cursor: pointer;
 }
 
+.sound-toggle:hover,
+.sound-toggle:focus-visible,
+.sound-toggle[aria-pressed="true"],
 .debug-toggle:hover,
 .debug-toggle:focus-visible,
 .debug-toggle[aria-pressed="true"] {
@@ -443,6 +462,7 @@ body:not(.is-loading) .site-meta {
   background: rgb(10 17 27 / 78%);
 }
 
+.sound-toggle:focus-visible,
 .debug-toggle:focus-visible {
   outline: 1px solid rgb(190 205 218 / 70%);
   outline-offset: 3px;

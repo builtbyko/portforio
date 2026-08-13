@@ -8,11 +8,14 @@ export function createUI() {
   const strataLegend = document.getElementById("strata-legend");
   const descentNotice = document.getElementById("descent-notice");
   const gateway = document.getElementById("gateway");
+  const soundToggle = document.getElementById("sound-toggle");
   const debugToggle = document.getElementById("debug-toggle");
   const debugPanel = document.getElementById("debug-panel");
   const debugOutput = document.getElementById("debug-output");
 
   if (!root) throw new Error("#scene-root is required");
+
+  let soundHandler = null;
 
   const onDebugToggle = () => {
     if (!debugPanel) return;
@@ -68,6 +71,16 @@ export function createUI() {
       gateway.hidden = false;
       gateway.dataset.visible = String(visible);
     },
+    enableSoundToggle(onToggle) {
+      if (!soundToggle) return;
+      soundToggle.hidden = false;
+      soundHandler = async () => {
+        const on = await onToggle();
+        soundToggle.setAttribute("aria-pressed", String(on));
+        soundToggle.textContent = on ? "Sound on" : "Sound";
+      };
+      soundToggle.addEventListener("click", soundHandler);
+    },
     setDebug(text) {
       if (debugOutput) debugOutput.textContent = text;
     },
@@ -78,6 +91,7 @@ export function createUI() {
     },
     dispose() {
       debugToggle?.removeEventListener("click", onDebugToggle);
+      if (soundHandler) soundToggle?.removeEventListener("click", soundHandler);
     },
   });
 }
