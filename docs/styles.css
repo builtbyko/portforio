@@ -77,6 +77,77 @@ body {
   content: "";
 }
 
+/* Shown while the reader is below the surface. The traced lines are an
+   interpretation and this is the moment that is easiest to misread, so the
+   wording is deliberately plain rather than atmospheric. */
+.descent-notice {
+  position: absolute;
+  right: var(--safe-right, 24px);
+  bottom: 22vh;
+  left: var(--safe-left, 24px);
+  z-index: 3;
+  max-width: 30em;
+  margin: 0 auto;
+  font-size: 0.72rem;
+  line-height: 1.9;
+  color: #93a6ba;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 700ms ease;
+}
+
+.descent-notice[data-visible="true"] {
+  opacity: 0.82;
+}
+
+.gateway {
+  position: absolute;
+  bottom: 11vh;
+  left: 50%;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9em;
+  align-items: center;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity 800ms ease;
+}
+
+.gateway[data-visible="true"] {
+  opacity: 1;
+}
+
+.gateway__lead {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  color: #8fa3b8;
+}
+
+.gateway__link {
+  padding: 0.85em 1.9em;
+  font-size: 0.78rem;
+  color: #e2ecf5;
+  letter-spacing: 0.26em;
+  text-indent: 0.26em;
+  text-decoration: none;
+  text-transform: uppercase;
+  border: 1px solid rgb(226 236 245 / 34%);
+  transition: border-color 300ms ease, background-color 300ms ease;
+}
+
+.gateway__link:hover,
+.gateway__link:focus-visible {
+  background: rgb(226 236 245 / 8%);
+  border-color: rgb(226 236 245 / 68%);
+}
+
+.gateway[data-visible="false"] .gateway__link {
+  pointer-events: none;
+}
+
 /* The act opens on near darkness, so the one affordance the reader needs is
    that scrolling does something. It leaves as soon as they start. */
 .scroll-cue {

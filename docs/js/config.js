@@ -126,16 +126,20 @@ export const CONFIG = Object.freeze({
   sequence: Object.freeze({
     // Length measured in viewport heights, so the reading pace is the same on
     // a phone and a desktop instead of tracking a pixel count.
-    scrollViewports: 5,
+    scrollViewports: 7,
     // Stage ends as a fraction of the whole, carried over from the second
-    // budget in the experience notes: 2.5 / 2.5 / 3 / 4 / 3.5 / 5.5 of 21.
+    // budget in the experience notes: 2.5 / 2.5 / 3 / 4 / 3.5 / 5.5 / 3.5 / 4
+    // / 1.5 of thirty.
     stageEnds: Object.freeze({
-      darkness: 0.119,
-      points: 0.238,
-      lines: 0.381,
-      buildings: 0.571,
-      side: 0.738,
-      strata: 1,
+      darkness: 0.083,
+      points: 0.167,
+      lines: 0.267,
+      buildings: 0.4,
+      side: 0.517,
+      strata: 0.7,
+      crack: 0.817,
+      descent: 0.95,
+      gateway: 1,
     }),
     // Fraction of the building stage a single building spends growing. The
     // rest of that stage is the wave travelling from the centre outwards.
@@ -157,7 +161,19 @@ export const CONFIG = Object.freeze({
     startHeightScale: 1.14,
     // prefers-reduced-motion snaps here instead of interpolating: darkness,
     // the line network, the finished city, and the separated layers.
-    reducedMotionStops: Object.freeze([0, 0.31, 0.571, 1]),
+    reducedMotionStops: Object.freeze([0, 0.22, 0.4, 0.7, 0.95]),
+  }),
+  descent: Object.freeze({
+    // Where the surface parts. Presentation only: this is not a fault line, a
+    // survey, or a claim that anything opens here.
+    crackWidth: 34,
+    // How far the camera drops below the surface, and how close it settles to
+    // the traced former-waterway line.
+    cameraDrop: 0.32,
+    // The former waterways are hand-traced approximations in plan. Nothing
+    // here encodes a channel section, a depth, or a present-day culvert, so
+    // the note on screen has to say so while the reader is down there.
+    noticeFrom: 0.35,
   }),
   strata: Object.freeze({
     // World units, and presentation only. These gaps say "different kind of

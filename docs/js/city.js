@@ -528,11 +528,41 @@ export function createCity(data, projection, quality) {
   const ground = createGround(contentBounds);
   surface.add(ground);
 
+  // Stage 7 parts the surface itself, buildings included. Rather than rebuild
+  // the geometry, each surface mesh gets a twin that shares its buffers; one
+  // half is clipped away on each side of the split, and the two halves move
+  // apart. The clip planes travel with the halves so the cut stays put.
+  const splitX = contentBounds.getCenter(new THREE.Vector3()).x;
+  const westPlane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), splitX);
+  const eastPlane = new THREE.Plane(new THREE.Vector3(1, 0, 0), -splitX);
+  const east = new THREE.Group();
+  east.name = "surface-east";
+  for (const child of [...surface.children]) {
+    if (!child.isMesh) continue;
+    child.material.clippingPlanes = [westPlane];
+    const twin = new THREE.Mesh(child.geometry, child.material.clone());
+    twin.material.clippingPlanes = [eastPlane];
+    twin.name = `${child.name}-east`;
+    twin.renderOrder = child.renderOrder;
+    twin.scale.copy(child.scale);
+    twin.position.copy(child.position);
+    east.add(twin);
+  }
+  group.add(east);
+
+  // Stage 8 has to arrive somewhere a traced line actually runs. The model
+  // centre is not that place, and aiming there lands the camera in empty dark.
+  const waterBox = waterways.object ? new THREE.Box3().setFromObject(waterways.object) : null;
+  const descentFocus = waterBox && !waterBox.isEmpty()
+    ? waterBox.getCenter(new THREE.Vector3())
+    : contentBounds.getCenter(new THREE.Vector3());
+
   return {
     group,
     // Frame the city itself. The ground plane extends far past it so its edge
     // dissolves in fog, and including it here would only push the camera back.
     bounds: contentBounds,
+    descentFocus,
     stats: Object.freeze({
       roadFeatures: roads.features,
       roadSegments: roads.segments,
@@ -554,7 +584,9 @@ export function createCity(data, projection, quality) {
       uniforms.buildingGrow.value = state.buildingGrow;
       if (points.object) points.object.material.opacity = state.pointOpacity;
       // Separation is presentation, not depth. See the note on screen.
-      const separation = state.strataT ?? 0;
+      // Going under closes most of the gap again: the exploded stack was a way
+      // of explaining, and stage 8 is meant to be a place instead of a diagram.
+      const separation = (state.strataT ?? 0) * THREE.MathUtils.lerp(1, 0.35, state.descentT ?? 0);
       railLayer.position.y = -CONFIG.strata.railDrop * separation;
       past.position.y = -CONFIG.strata.pastDrop * separation;
       // Turning to the side also cuts the ground down to a finite specimen:
@@ -562,6 +594,16 @@ export function createCity(data, projection, quality) {
       // that drops below it.
       const contracted = THREE.MathUtils.lerp(1, CONFIG.strata.slabContractTo, state.sideT ?? 0);
       ground.scale.set(contracted, 1, contracted);
+      for (const twin of east.children) {
+        if (twin.name.startsWith("city-ground")) twin.scale.set(contracted, 1, contracted);
+      }
+      // The surface parts, and the cut travels with each half so the opening
+      // stays a clean edge rather than smearing across the model.
+      const opening = (CONFIG.descent.crackWidth * 0.5) * (state.crackT ?? 0);
+      surface.position.x = -opening;
+      east.position.x = opening;
+      westPlane.constant = splitX - opening;
+      eastPlane.constant = -(splitX + opening);
     },
     dispose() {
       disposeObject3D(group);

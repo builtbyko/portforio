@@ -29,6 +29,8 @@ function createRenderer(host, quality) {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = CONFIG.renderer.exposure;
   renderer.shadowMap.enabled = false;
+  // Stage 7 splits the surface with per-material clipping planes.
+  renderer.localClippingEnabled = true;
   renderer.domElement.setAttribute("aria-hidden", "true");
   host.appendChild(renderer.domElement);
   return renderer;
@@ -116,7 +118,7 @@ async function bootstrap(ui) {
     const viewport = viewportFor(ui.root);
     renderer.setPixelRatio(pixelRatioFor(quality));
     renderer.setSize(viewport.width, viewport.height, true);
-    frameFixedCamera(camera, city.bounds, viewport, sequence);
+    frameFixedCamera(camera, city.bounds, viewport, sequence, city.descentFocus);
     renderer.render(scene, camera);
     ui.setDebug(debugText({ quality, assets, city, renderer, sequence }));
   };
@@ -140,7 +142,9 @@ async function bootstrap(ui) {
       }
       city.applySequence(sequence);
       ui.setScrollStarted(progress > 0.01);
-      ui.setStrataLegendVisible(sequence.strataT > 0.12);
+      ui.setStrataLegendVisible(sequence.strataT > 0.12 && sequence.crackT < 0.5);
+      ui.setDescentNoticeVisible(sequence.descentT > CONFIG.descent.noticeFrom);
+      ui.setGatewayVisible(sequence.gatewayT > 0.25);
       scheduleRender();
     },
   });

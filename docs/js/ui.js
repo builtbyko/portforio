@@ -6,6 +6,8 @@ export function createUI() {
   const fallbackMessage = document.getElementById("fallback-message");
   const scrollCue = document.getElementById("scroll-cue");
   const strataLegend = document.getElementById("strata-legend");
+  const descentNotice = document.getElementById("descent-notice");
+  const gateway = document.getElementById("gateway");
   const debugToggle = document.getElementById("debug-toggle");
   const debugPanel = document.getElementById("debug-panel");
   const debugOutput = document.getElementById("debug-output");
@@ -55,6 +57,16 @@ export function createUI() {
       if (!strataLegend) return;
       strataLegend.hidden = false;
       strataLegend.dataset.visible = String(visible);
+    },
+    setDescentNoticeVisible(visible) {
+      if (!descentNotice) return;
+      descentNotice.hidden = false;
+      descentNotice.dataset.visible = String(visible);
+    },
+    setGatewayVisible(visible) {
+      if (!gateway) return;
+      gateway.hidden = false;
+      gateway.dataset.visible = String(visible);
     },
     setDebug(text) {
       if (debugOutput) debugOutput.textContent = text;

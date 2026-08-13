@@ -11,7 +11,7 @@ export function createFixedCamera() {
   return new THREE.PerspectiveCamera(CONFIG.camera.desktopFov, 1, 0.1, 3000);
 }
 
-export function frameFixedCamera(camera, sourceBounds, viewport, sequence) {
+export function frameFixedCamera(camera, sourceBounds, viewport, sequence, descentFocus) {
   const bounds = safeBounds(sourceBounds);
   // 1 is the finished Phase 2 framing; earlier in the act the camera sits
   // further back and a little higher, and closes in as the city forms.
@@ -20,6 +20,10 @@ export function frameFixedCamera(camera, sourceBounds, viewport, sequence) {
   // the whole stack once the layers have parted.
   const toSide = sequence ? THREE.MathUtils.clamp(sequence.sideT ?? 0, 0, 1) : 0;
   const parted = sequence ? THREE.MathUtils.clamp(sequence.strataT ?? 0, 0, 1) : 0;
+  // Act 3: close on the opening, then go under and settle near the traced
+  // line with the city left overhead.
+  const opened = sequence ? THREE.MathUtils.clamp(sequence.crackT ?? 0, 0, 1) : 0;
+  const below = sequence ? THREE.MathUtils.clamp(sequence.descentT ?? 0, 0, 1) : 0;
   const size = bounds.getSize(new THREE.Vector3());
   const center = bounds.getCenter(new THREE.Vector3());
   const aspect = Math.max(0.1, viewport.width / Math.max(1, viewport.height));
@@ -47,19 +51,39 @@ export function frameFixedCamera(camera, sourceBounds, viewport, sequence) {
   // The ceiling is applied after the pull-back, so no point in the act can put
   // the camera somewhere the city cannot be seen from.
   const strataPull = THREE.MathUtils.lerp(1, CONFIG.camera.strataDistanceScale, parted);
+  // Closing on the opening, then going under, both mean getting much nearer
+  // than any framing of the whole model.
+  // Close on the opening, then hold enough distance underneath that the city
+  // still reads as a ceiling rather than leaving the frame entirely.
+  // The eye has to end up between the underside of the city and the traced
+  // line: too far back and the rising angle puts it above ground again, too
+  // near and the line fills the frame as a flat band.
+  const approach = THREE.MathUtils.lerp(1, 0.66, opened) * THREE.MathUtils.lerp(1, 0.54, below);
   const distance = Math.min(
     Math.max(widthDistance, heightDistance) * padding * pullBack * strataPull,
     fogLimit,
-  );
+  ) * approach;
 
   // Once the layers part, the subject reaches below the ground, so the camera
   // looks down the stack rather than at the surface alone.
-  const stackDrop = (CONFIG.strata.pastDrop * CONFIG.camera.strataTargetDrop) * parted;
+  // Stage 7 looks for the opening, which is in the surface, so the gaze comes
+  // back up out of the stack before it goes under.
+  const stackDrop = (CONFIG.strata.pastDrop * CONFIG.camera.strataTargetDrop)
+    * parted
+    * THREE.MathUtils.lerp(1, 0.12, opened);
+  // Act 3 keeps dropping until the traced line is the subject and the surface
+  // has become a ceiling.
+  const underDrop = CONFIG.strata.pastDrop * CONFIG.descent.cameraDrop * below;
   const target = new THREE.Vector3(
     center.x,
-    bounds.min.y + modelHeight * CONFIG.camera.targetHeightRatio - stackDrop,
+    bounds.min.y + modelHeight * CONFIG.camera.targetHeightRatio - stackDrop - underDrop,
     center.z,
   );
+  // Drift towards where a traced line actually runs as the descent goes on.
+  if (descentFocus && below > 0) {
+    target.x = THREE.MathUtils.lerp(target.x, descentFocus.x, below);
+    target.z = THREE.MathUtils.lerp(target.z, descentFocus.z, below);
+  }
   const heightLift = THREE.MathUtils.lerp(CONFIG.sequence.startHeightScale, 1, advance);
   const rawDirection = new THREE.Vector3(...CONFIG.camera.direction);
   rawDirection.y *= heightLift;
@@ -67,6 +91,12 @@ export function frameFixedCamera(camera, sourceBounds, viewport, sequence) {
   // the path never reverses and never passes through the model.
   const sideDirection = new THREE.Vector3(...CONFIG.camera.sideDirection);
   const direction = rawDirection.normalize().lerp(sideDirection.normalize(), toSide).normalize();
+  // Rise over the opening to look down into it, then settle just above the
+  // traced line. The line is a flat ribbon with no thickness, so an eye level
+  // with it sees nothing at all; the shot has to keep looking down on it.
+  direction.y = THREE.MathUtils.lerp(direction.y, 0.74, opened);
+  direction.y = THREE.MathUtils.lerp(direction.y, 0.3, below);
+  direction.normalize();
   if (!portrait) {
     const forward = direction.clone().negate();
     const cameraRight = forward.cross(camera.up).normalize();
