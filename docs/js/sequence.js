@@ -1,6 +1,6 @@
 import { CONFIG } from "./config.js";
 
-const STAGE_ORDER = ["darkness", "points", "lines", "buildings"];
+const STAGE_ORDER = ["darkness", "points", "lines", "buildings", "side", "strata"];
 
 function clamp01(value) {
   return value < 0 ? 0 : value > 1 ? 1 : value;
@@ -41,6 +41,8 @@ export function evaluateSequence(progress) {
   const points = stageProgress(p, "points");
   const lines = stageProgress(p, "lines");
   const buildings = stageProgress(p, "buildings");
+  const side = stageProgress(p, "side");
+  const strata = stageProgress(p, "strata");
 
   // Points exist from the first frame but only as a threshold glow, then take
   // the screen, then step back once the lines carry the reading.
@@ -62,9 +64,14 @@ export function evaluateSequence(progress) {
     pointOpacity: clamp01(pointOpacity) * (buildings > 0 ? 1 - smooth(buildings) : 1),
     lineReveal: smooth(lines),
     buildingGrow: smooth(buildings),
-    // Camera closes in across the whole act rather than per stage, so no
-    // single boundary reads as a cut.
-    cameraT: smooth(p),
+    // How far the camera has swung round to read the ground edge-on.
+    sideT: smooth(side),
+    // How far the layers have pulled apart.
+    strataT: smooth(strata),
+    // Camera closes in over the forming stages only. Act 2 moves the camera
+    // through sideT and strataT instead, so this stops advancing at the point
+    // the city is finished.
+    cameraT: smooth(Math.min(1, p / CONFIG.sequence.stageEnds.buildings)),
   };
 }
 

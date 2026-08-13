@@ -5,6 +5,7 @@ export function createUI() {
   const fallback = document.getElementById("fallback");
   const fallbackMessage = document.getElementById("fallback-message");
   const scrollCue = document.getElementById("scroll-cue");
+  const strataLegend = document.getElementById("strata-legend");
   const debugToggle = document.getElementById("debug-toggle");
   const debugPanel = document.getElementById("debug-panel");
   const debugOutput = document.getElementById("debug-output");
@@ -49,6 +50,11 @@ export function createUI() {
     },
     setScrollStarted(started) {
       if (scrollCue) scrollCue.dataset.started = String(started);
+    },
+    setStrataLegendVisible(visible) {
+      if (!strataLegend) return;
+      strataLegend.hidden = false;
+      strataLegend.dataset.visible = String(visible);
     },
     setDebug(text) {
       if (debugOutput) debugOutput.textContent = text;

@@ -140,6 +140,7 @@ async function bootstrap(ui) {
       }
       city.applySequence(sequence);
       ui.setScrollStarted(progress > 0.01);
+      ui.setStrataLegendVisible(sequence.strataT > 0.12);
       scheduleRender();
     },
   });

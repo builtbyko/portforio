@@ -428,7 +428,10 @@ function createGround(bounds) {
     CONFIG.model.minGroundExtent,
     size.z * (1 + CONFIG.model.groundPadding * 2),
   );
-  const geometry = new THREE.PlaneGeometry(width, depth, 1, 1);
+  // A slab rather than a plane: stage 5 turns to the side to discover that the
+  // ground has a thickness, which a flat plane cannot show.
+  const thickness = CONFIG.strata.slabThickness;
+  const geometry = new THREE.BoxGeometry(width, thickness, depth);
   const material = new THREE.MeshStandardMaterial({
     color: CONFIG.palette.ground,
     roughness: 0.96,
@@ -436,8 +439,8 @@ function createGround(bounds) {
   });
   const ground = new THREE.Mesh(geometry, material);
   ground.name = "city-ground";
-  ground.rotation.x = -Math.PI / 2;
-  ground.position.set(center.x, CONFIG.model.groundY, center.z);
+  // Top face sits where the plane used to, so nothing above it moves.
+  ground.position.set(center.x, CONFIG.model.groundY - thickness * 0.5, center.z);
   ground.renderOrder = 0;
   return ground;
 }
@@ -505,11 +508,25 @@ export function createCity(data, projection, quality) {
   const buildings = createBuildings(data.buildings, projection, quality, uniforms);
   const points = createPointField(vertexSink, quality, uniforms);
 
-  for (const layer of [waterways.object, roads.object, rail.object, buildings.object, points.object]) {
-    if (layer) group.add(layer);
+  // Grouped by what each layer means, because that is the axis stage 6
+  // separates along. Present surface stays put; the rest drop away from it.
+  const surface = new THREE.Group();
+  surface.name = "present-surface";
+  const railLayer = new THREE.Group();
+  railLayer.name = "rail-layer";
+  const past = new THREE.Group();
+  past.name = "past-layer";
+
+  for (const layer of [roads.object, buildings.object, points.object]) {
+    if (layer) surface.add(layer);
   }
+  if (rail.object) railLayer.add(rail.object);
+  if (waterways.object) past.add(waterways.object);
+  group.add(surface, railLayer, past);
+
   const contentBounds = modelBounds(group);
-  group.add(createGround(contentBounds));
+  const ground = createGround(contentBounds);
+  surface.add(ground);
 
   return {
     group,
@@ -536,6 +553,15 @@ export function createCity(data, projection, quality) {
       uniforms.pointReveal.value = state.pointReveal;
       uniforms.buildingGrow.value = state.buildingGrow;
       if (points.object) points.object.material.opacity = state.pointOpacity;
+      // Separation is presentation, not depth. See the note on screen.
+      const separation = state.strataT ?? 0;
+      railLayer.position.y = -CONFIG.strata.railDrop * separation;
+      past.position.y = -CONFIG.strata.pastDrop * separation;
+      // Turning to the side also cuts the ground down to a finite specimen:
+      // an endless slab has no readable edge and would roof over everything
+      // that drops below it.
+      const contracted = THREE.MathUtils.lerp(1, CONFIG.strata.slabContractTo, state.sideT ?? 0);
+      ground.scale.set(contracted, 1, contracted);
     },
     dispose() {
       disposeObject3D(group);
