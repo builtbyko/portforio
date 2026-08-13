@@ -39,24 +39,28 @@ python tools/serve_lab.py
 
 ## 構成
 
+公開されるのは `docs/` です。GitHub Pages のソースが `main / docs` に設定されています。
+
 ```text
-index.html          Canvas host、loading、fallback
-styles.css          全画面layout、最小UI
-js/
-  app.js            Renderer／Scene lifecycle、resize、dispose
-  config.js         bbox、色、露出、霧、light、camera、進行の配分
-  sequence.js       進捗0〜1を各層の状態へ写す純関数
-  scroll.js         scroll量を進捗へ
-  city.js           道路、鉄道、旧河川、建物、点の生成
-  camera.js         PC／mobileの固定camera
-  quality.js        PC／mobile判定
-  assets.js         load、error、abort、fallback
-  geo.js            局所メートル座標
-  ui.js             loading、debug、fallback、scroll合図
-vendor/             Three.js r185
-data/               表示用の派生GeoJSONとmanifest
-tools/
-  serve_lab.py      開発用サーバー
+docs/                 ← Pagesが配信する範囲
+  index.html          Canvas host、loading、fallback
+  styles.css          全画面layout、最小UI
+  js/
+    app.js            Renderer／Scene lifecycle、resize、dispose
+    config.js         bbox、色、露出、霧、light、camera、進行の配分
+    sequence.js       進捗0〜1を各層の状態へ写す純関数
+    scroll.js         scroll量を進捗へ
+    city.js           道路、鉄道、旧河川、建物、点の生成
+    camera.js         PC／mobileの固定camera
+    quality.js        PC／mobile判定
+    assets.js         load、error、abort、fallback
+    geo.js            局所メートル座標
+    ui.js             loading、debug、fallback、scroll合図
+  vendor/             Three.js r185
+  data/               表示用の派生GeoJSONとmanifest
+  .nojekyll           Jekyllの前処理を止める
+tools/                ← 公開されない
+  serve_lab.py        開発用サーバー
   prepare_city_data.py  データ再生成
 ```
 
@@ -64,7 +68,7 @@ npm、bundler、build stepはありません。native ES modulesで動きます�
 
 ## データ
 
-出典、精度、ライセンスは [DATA_SOURCES.md](DATA_SOURCES.md) と `data/manifest.json` を参照してください。
+出典、精度、ライセンスは [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md) と `docs/data/manifest.json` を参照してください。
 
 - 道路・建物・鉄道: OpenStreetMap（ODbL 1.0）
 - 旧河川: 手動トレースの**参考線形**。公式境界でも正確な流路でも深度でもありません

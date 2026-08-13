@@ -17,7 +17,8 @@ import socket
 import socketserver
 from pathlib import Path
 
-SITE_ROOT = Path(__file__).resolve().parent.parent
+# The published site lives in docs/, which is what GitHub Pages serves.
+SITE_ROOT = Path(__file__).resolve().parent.parent / "docs"
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
