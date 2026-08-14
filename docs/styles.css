@@ -83,10 +83,12 @@ body {
 .descent-notice {
   position: absolute;
   right: var(--safe-right, 24px);
-  bottom: 22vh;
+  /* Clear of the gateway beneath it: the two arrive together at the end and
+     ran into each other as one block of text. */
+  bottom: 32vh;
   left: var(--safe-left, 24px);
   z-index: 3;
-  max-width: 30em;
+  max-width: 27em;
   margin: 0 auto;
   font-size: 0.72rem;
   line-height: 1.9;
@@ -103,7 +105,7 @@ body {
 
 .gateway {
   position: absolute;
-  bottom: 11vh;
+  bottom: 14vh;
   left: 50%;
   z-index: 4;
   display: flex;
